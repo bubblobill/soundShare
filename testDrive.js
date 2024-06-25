@@ -1,5 +1,4 @@
-<script type="module">
-import { Octokit } from "octokit";
+//import { Octokit } from "octokit";
 
 const octokit = new Octokit({ });
 
@@ -12,4 +11,3 @@ const result = await octokit.request('GET /repos/bubblobill/soundShare/contents/
   }
 })
 document.getElementById("response").innerText = result;
-</script>

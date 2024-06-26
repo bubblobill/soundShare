@@ -1,29 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>soundShare</title>
-<style type="text/css">
-body { font-family: Verdana, Arial, Helvetica, sans-serif; position: relative; color: #222222; font-size: 1.0em; }
-<script type="text/javascript" src="jsonpath.js"></script>
-<script type="text/javascript" src="json2.js"></script>
-</style>
-</head>
-<body>
-<div id="response" style="border: 1px solid blue; min-height:50px; min-width:50px;">placeholder</div>
-<h3>Shared Sound Links</h3>
-<div id="content"></div>
-<a href="audio/foley/"><h4>Foley</h4></a>
-<a href="audio/loops"><h4>Loops</h4></a>
-<a href="audio/music"><h4>Music</h4></a>
-<a href="audio/UI"><h4>User Interface</h4></a>
-
-<script >
-  /* JSONPath 0.8.0 - XPath for JSON
+/* JSONPath 0.8.0 - XPath for JSON
  *
  * Copyright (c) 2007 Stefan Goessner (goessner.net)
  * Licensed under the MIT (MIT-LICENSE.txt) licence.
  */
-var jsonPath = function(obj, expr, arg) {
+const jsonPath = function(obj, expr, arg) {
    var P = {
       resultType: arg && arg.resultType || "VALUE",
       result: [],
@@ -105,73 +85,3 @@ var jsonPath = function(obj, expr, arg) {
       return P.result.length ? P.result : false;
    }
 } 
-
-  </script>
-
-<script delay type="module">
-  import { request } from "https://cdn.pika.dev/@octokit/request";
-  const basePath = "/repos/bubblobill/soundShare/contents/"; 
-  import data from '/treeList.json'  assert { type: 'json' };
-  /*
-  myAsyncMethod("audio");
-
-  async function myAsyncMethod(path) { 
-  //client.Git.Tree.Get
-    const result = await request('GET /repos/bubblobill/soundShare/git/trees/c1f6d668952386076e846cea4300977364ef1cb1?recursive=1', {
-  owner: 'OWNER',
-  repo: 'REPO',
-  tree_sha: 'TREE_SHA',
-  headers: {
-    'X-GitHub-Api-Version': '2022-11-28'
-  }
-  })
-
-    
-    
-    //" + basePath + path);
-    update(result.data);
-  }
-  
-  function update(json){
-    //let txt = jsonPath(json, "$.name[*]").toJSONString();
-    document.getElementById("response").innerText = JSON.stringify(json);
-    
-    for(let i = 0;i < json.length; i++){
-      let entry = json[i];
-      let a = document.createElement("a");
-      let el = document.createElement("button");
-      let txt = document.createTextNode(entry.name);
-      el.appendChild(txt);
-      a.appendChild(el)
-      if(entry.type === "file"){
-        a.href = entry.html_url;
-      }
-      document.getElementById("content").appendChild(el);
-      a.dataset.path = entry.path;
-      a.dataset.type = entry.type;
-      a.dataset.download_url = entry.download_url;
-      a.dataset.size = entry.size;
-      el.addEventListener("click", function(e){
-        console.log(e.target.dataset.path);
-        console.log(e.target.dataset.type);
-        console.log(e.target.dataset.download_url );
-        console.log(e.target.dataset.size);
-        console.log(e.target.tagName);
-      });
-      if(entry.type === "dir"){ update(entry.path);}
-    }
-    
-    
-  }
-  */
-  window.addEventListener("load", function(){
-    buildFileMap(jsn);
-  });
-  function buildFileMap(json){
-    let txt = JSON.parse(json).tree;
-    document.getElementById("response").innerText = txt;
-    JSONPath(txt.tree);
-  }
-</script>
-</body>
-</html>

@@ -1,8 +1,6 @@
-//import { Octokit } from "octokit";
-
 const octokit = new Octokit({ });
 
-const result = await async octokit.request('GET /repos/bubblobill/soundShare/contents/audio', {
+const result = async function(){ await  octokit.request('GET /repos/bubblobill/soundShare/contents/audio', {
   owner: 'OWNER',
   repo: 'REPO',
   path: 'PATH',
@@ -10,4 +8,5 @@ const result = await async octokit.request('GET /repos/bubblobill/soundShare/con
     'X-GitHub-Api-Version': '2022-11-28'
   }
 })
+}
 document.getElementById("response").innerText = result;

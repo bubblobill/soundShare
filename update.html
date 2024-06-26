@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>soundShare</title>
+<style>
+body { font-family: Verdana, Arial, Helvetica, sans-serif; position: relative; color: #222222; font-size: 1.0em; }
+</style>
+<script type="text/javascript" src="jsonpath.js"></script>
+<script type="text/javascript" src="json2.js"></script>
+
+</head>
+<body>
+<div id="response" style="border: 1px solid blue; min-height:50px; min-width:50px;">placeholder</div>
+<h3>Shared Sound Links</h3>
+<div id="content"></div>
+<script type="module">
+  import { request } from "https://cdn.pika.dev/@octokit/request";
+  const basePath = "/repos/bubblobill/soundShare/contents/";
+
+  myAsyncMethod();
+
+  async function myAsyncMethod() {
+    const result = await request('GET /repos/bubblobill/soundShare/git/trees/c1f6d668952386076e846cea4300977364ef1cb1?recursive=1', {
+  owner: 'OWNER',
+  repo: 'REPO',
+  tree_sha: 'TREE_SHA',
+  headers: {
+    'X-GitHub-Api-Version': '2022-11-28'
+  }
+  })
+    update(result.data);
+  }
+  
+  function update(json){
+    let txt = jsonPath(json, "$.name[*]").toJSONString();
+    document.getElementById("response").innerText = JSON.stringify(json);
+    
+    for(let i = 0;i < json.length; i++){
+      let entry = json[i];
+      let a = document.createElement("a");
+      let el = document.createElement("button");
+      let txt = document.createTextNode(entry.name);
+      el.appendChild(txt);
+      a.appendChild(el)
+      if(entry.type === "file"){
+        a.href = entry.html_url;
+      }
+      document.getElementById("content").appendChild(el);
+      a.dataset.path = entry.path;
+      a.dataset.type = entry.type;
+      a.dataset.download_url = entry.download_url;
+      a.dataset.size = entry.size;
+      el.addEventListener("click", function(e){
+        console.log(e.target.dataset.path);
+        console.log(e.target.dataset.type);
+        console.log(e.target.dataset.download_url );
+        console.log(e.target.dataset.size);
+        console.log(e.target.tagName);
+      });
+      if(entry.type === "dir"){ update(entry.path);}
+    }
+    
+    
+  }
+  */
+  window.addEventListener("load", function(){
+    buildFileMap(jsn);
+  });
+  function buildFileMap(json){
+    let txt = JSON.parse(json).tree;
+    document.getElementById("response").innerText = txt;
+    JSONPath(txt.tree);
+  }
+</script>
+</body>
+</html>

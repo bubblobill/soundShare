@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-au">
 <head>
 <title>soundShare</title>
 <style type="text/css">
@@ -13,9 +13,9 @@ body { font-family: Verdana, Arial, Helvetica, sans-serif; position: relative; c
 <h3>Shared Sound Links</h3>
 <div id="content"></div>
 <a href="audio/foley/"><h4>Foley</h4></a>
-<a href="audio/loops"><h4>Loops</h4></a>
-<a href="audio/music"><h4>Music</h4></a>
-<a href="audio/UI"><h4>User Interface</h4></a>
+<a href="audio/loops/"><h4>Loops</h4></a>
+<a href="audio/music/"><h4>Music</h4></a>
+<a href="audio/UI"/><h4>User Interface</h4></a>
 
 <script >
   /* JSONPath 0.8.0 - XPath for JSON
@@ -108,7 +108,7 @@ var jsonPath = function(obj, expr, arg) {
 
   </script>
 
-<script delay type="module">
+<script type="module">
   import { request } from "https://cdn.pika.dev/@octokit/request";
   const basePath = "/repos/bubblobill/soundShare/contents/"; 
   import data from '/treeList.json'  assert { type: 'json' };

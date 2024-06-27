@@ -1,139 +1,206 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-au">
 <head>
 <title>soundShare</title>
 <style>
-body { font-family: Verdana, Arial, Helvetica, sans-serif; position: relative; color: #222222; font-size: 1.0em; }
+body { font-family: Verdana, Arial, Helvetica, sans-serif; position: relative; color: #222222; font-size: 1.0em;
+ cursor: default;}
+ .hidden{ display: none; }
+ input:disabled { cursor: default; }
+ .tj_audio_controls{
+  border-radius: 0.7rem;
+  border: 1px solid navy;
+  display: inline-block;
+  line-height:1rem;
+  min-width: 1.6rem;
+  text-align: center;
+ }
+ .tj_audio_controls.disabled { border: 1px solid grey; }
+ .tj_audio_control{ color: blue; }
+ .tj_audio_controls.disabled .tj_audio_control{
+  cursor: default;
+  color: grey;
+ }
+.tj_audio_control:hover, .tj_copy:hover, .tj_checkbox:hover { cursor:pointer; }
+.tj_container ul { padding-inline-start: 1rem; }
+.tj_container li::marker { content: none; margin: 0; padding: 0; }
+.tj_icon { margin: 0 0.3rem; }
+
+  input[type="checkbox"]{
+    margin-right: 0.4rem;
+    height:0.9rem;
+    width: 0.9rem;
+  }
 </style>
 <link type="text/css" href="css/treejs.min.css" />
-<script type="text/javascript" src="js/tree.min.js"></script>
+<script type="text/javascript" src="js/treejs/tree.js"></script>
 <script type="text/javascript" src="js/jsonpath.js"></script>
-<script type="text/javascript" src="js/json2.js"></script>
+<!--script type="text/javascript" src="js/json2.js"></script -->
 </head>
 <body>
-<div id="response" style="border: 1px solid blue; min-height:50px; min-width:50px;">placeholder</div>
-<h3>Shared Sound Links</h3>
-<div id="content"></div>
-<a href="audio/foley/"><h4>Foley</h4></a>
-<a href="audio/loops/"><h4>Loops</h4></a>
-<a href="audio/music/"><h4>Music</h4></a>
-<a href="audio/UI/"><h4>User Interface</h4></a>
+<h3>Sound-Share Links</h3>
 <div id="tree"></div>
-<div id="template">
-<input type="checkbox" value="https://bubblobill.github.io/soundShare/audio/UI/LawOrder_dundun_.mp3">
-  <audio controls>
-    <source src="https://bubblobill.github.io/soundShare/audio/UI/LawOrder_dundun_.mp3" type="audio/mpeg">
-  </audio>
-</div>
-  <script>
-    //import listing from '/treeList.json'  assert { type: 'json' };
-  var dirListing;
-  var tree = {};
-  function fetchJSONData() {
-    fetch("https://raw.githubusercontent.com/bubblobill/soundShare/main/treeList.json")
-        .then((res) => {
-            if (!res.ok) {
-                throw new Error
-                    (`HTTP error! Status: ${res.status}`);
-            }
-            return res.json();
-        })
-        .then((data) =>
-             buildFileMap(data)) // console.log(data))
-        .catch((error) =>
-               console.error("Unable to fetch data:", error));
-  }
 
+<script>
+  'use strict'
+  //import listing from '/treeList.json'  assert { type: 'json' };
+var dirListing;
 
-  window.addEventListener("load", function(){
-    dirListing = fetchJSONData();
-  });
-  function buildFileMap(json){
-    let paths = jsonPath(json, "$..path");
-    let dirs = Object.values(jsonPath(json, "$..[?(@.type==`tree`)].path"));
-    document.getElementById("response").innerText = JSON.stringify(dirs);
-    let dirArr = filesToTreeNodes(paths, dirs);
-    var root = new TreeNode("Audio"); // Create the root-node
-    var tree_ = new TreeView(root, document.getElementById("tree"), {show_root:false});
-
-    loopNodes(dirArr, root);
-    function loopNodes(arrArr, node){
-      for(let i = 0; i < arrArr.length; i++){
-        let ob = arrArr[i];
-        let n1 = new TreeNode(ob.fileName)
-        n1.userObject = ob;
-        node.addChild(n1)
-        let path = new TreePath(root, n1);
-        console.log(path.toString());
-        if(ob.isDirectory){
-          loopNodes(arrArr[i].children, n1);
-        }
-      }
-    }
-    tree_.reload();
-    //let nodes = tree_.getPath
-   // console.log(nodes);
-//        let clone = template.cloneNode(true);
-  //      clone.getElementsByTagName("source")[0].src = "https://bubblobill.github.io/soundShare/audio/" + item.innerText;
-    //    item.before(clone);
-
-
-    //console.log(nodes.length);
-  }
-
-
-  function filesToTreeNodes(arr, dirs) {
-    var tree = {}
-    function addnode(obj) {
-      var splitpath = obj.replace(/^\/|\/$/g, "").split('/');
-      var ptr = tree;
-      for (let i = 0; i < splitpath.length; i++) {
-        let node = {
-          fileName: splitpath[i],
-          path: obj,
-          isDirectory: false
-        };
-        if (dirs.includes(obj)) {
-          node.isDirectory = true
-        }
-        ptr[splitpath[i]] = ptr[splitpath[i]] || node;
-        ptr[splitpath[i]].children = ptr[splitpath[i]].children || {};
-        ptr = ptr[splitpath[i]].children;
-      }
-    }
-    function objectToArr(node) {
-      Object.keys(node || {}).map((k) => {
-        if (node[k].children) {
-          objectToArr(node[k])
-        }
+function fetchJSONData() {
+  fetch("https://raw.githubusercontent.com/bubblobill/soundShare/main/treeList.json")
+      .then((res) => {
+          if (!res.ok) {
+              throw new Error
+                  (`HTTP error! Status: ${res.status}`);
+          }
+          return res.json();
       })
-      if (node.children) {
-        node.children = Object.values(node.children)
-        node.children.forEach(objectToArr)
+      .then((data) =>
+           buildFileMap(data))
+      .catch((error) =>
+             console.error("Unable to fetch data:", error));
+}
+
+
+window.addEventListener("load", function(){
+  dirListing = fetchJSONData();
+});
+
+let listItemStore = [];
+const template = document.getElementById("template");
+const tempBtn = document.getElementById("btn");
+function buildFileMap(json){
+  let paths = jsonPath(json, "$..path");
+  let dirs = Object.values(jsonPath(json, "$..[?(@.type==`tree`)].path"));
+  let dirArr = filesToTreeNodes(paths, dirs);
+  var root = new TreeNode("Audio"); // Create the root-node
+  var tree = new TreeView(root, document.getElementById("tree"), {show_root:false});
+
+  loopNodes(dirArr, root);
+
+  function loopNodes(arrArr, node){
+    for(let i = 0; i < arrArr.length; i++){
+      let ob = arrArr[i];
+      let n1 = new TreeNode(ob.fileName)
+      let parentId;
+      let parentOpt = node.getOptions();
+      parentId = Object.hasOwn(parentOpt, "id") ? parentOpt.id : parentId = "";
+      let childOpt = n1.getOptions();
+      childOpt.id = parentId + (ob.isDirectory ? "D" + i : "N" + i);
+      childOpt.fileName   = ob.fileName   ;
+      childOpt.isDirectory= ob.isDirectory;
+      childOpt.path       = ob.path       ;
+
+      n1.setOptions(childOpt);
+      node.setExpanded((childOpt.id.length - childOpt.id.replaceAll("D", "").length >= 2 || n1.getChildCount() > 7) ? false : true);
+      //n1.on("click", n1.toggleSelected());
+      //n1.on("toggle_selected", updateSelection(n1));
+
+      node.addChild(n1);
+
+      if(ob.isDirectory){
+        loopNodes(arrArr[i].children, n1);
       }
+
     }
-    arr.map(addnode);
-    objectToArr(tree)
-    return Object.values(tree)
   }
+  tree.reload();
+}
 
-
-  var div = document.getElementById('myList');
-
-
-
-
-  function addToClipboard() {
-    // Get the text field
-    var copyText = document.getElementById("myInput");
-    // Select the text field
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); // For mobile devices
-     // Copy the text inside the text field
-    navigator.clipboard.writeText(copyText.value);
-    // Alert the copied text
-    alert("Copied the text: " + copyText.value);
+function updateSelection(node){
+  let cb = document.getElementById(node.getOptions() + "_checkbox");
+  if(cb != undefined && cb != null && node != undefined){
+    cb.selected = node.isSelected();
   }
-  </script>
+};
+
+function filesToTreeNodes(arr, dirs) {
+  var tree = {}
+  function addNode(obj) {
+    var splitPath = obj.replace(/^\/|\/$/g, "").split('/');
+    var ptr = tree;
+    for (let i = 0; i < splitPath.length; i++) {
+      let node = {
+        fileName: splitPath[i],
+        path: obj,
+        isDirectory: false
+      };
+      if (dirs.includes(obj)) {
+        node.isDirectory = true
+      }
+      ptr[splitPath[i]] = ptr[splitPath[i]] || node;
+      ptr[splitPath[i]].children = ptr[splitPath[i]].children || {};
+      ptr = ptr[splitPath[i]].children;
+    }
+  }
+  function objectToArr(node) {
+    Object.keys(node || {}).map((k) => {
+      if (node[k].children) {
+        objectToArr(node[k])
+      }
+    })
+    if (node.children) {
+      node.children = Object.values(node.children)
+      node.children.forEach(objectToArr)
+    }
+  }
+  arr.map(addNode);
+  objectToArr(tree)
+  return Object.values(tree)
+}
+
+
+
+
+function addToClipboard() {
+  // Get the text field
+  var copyText = document.getElementById("myInput");
+  // Select the text field
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); // For mobile devices
+   // Copy the text inside the text field
+  navigator.clipboard.writeText(copyText.value);
+  // Alert the copied text
+  alert("Copied the text: " + copyText.value);
+}
+function togglePlayPause(el, off = false){
+  if(off){
+    el.firstElementChild.classList.remove("hidden");
+    el.lastElementChild.classList.add("hidden");
+  } else {
+   el.firstElementChild.classList.add("hidden");
+   el.lastElementChild.classList.remove("hidden");
+  }
+}
+function buttonHandler(e){
+  const t = e.target;
+  if(t.id.includes("audio_controls")){
+    const player = document.getElementById(t.id.replace("_controls_pause", "").replace("_controls_play", ""));
+    if(t.id.includes("play")){
+      if(player.ended || player.paused && player.readyState >= 2){
+        player.play();
+        player.addEventListener("ended", (event) => {
+          togglePlayPause(t.parentElement, true);
+        });
+        togglePlayPause(t.parentElement, false);
+      } else {
+        return;
+      }
+    } else {
+      if(player.paused){
+       return;
+      } else if(!player.ended || player.error != null){
+        player.pause();
+
+      }
+
+
+    }
+  }
+//  console.log(e);
+}
+</script>
+&#128203;
+&#10697;
 </body>
 </html>

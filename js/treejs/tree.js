@@ -134,13 +134,38 @@ function TreeView(root, container, options){
 				cnt.appendChild(renderNode(child));
 			});
 		}
-
 		container.innerHTML = "";
 		container.appendChild(cnt);
 	}
 
 	function renderNode(node){
+    let options = node.getOptions();
+    console.log(options);
+// options.fileName   ;
+// options.id         ;
+// options.isDirectory;
+// options.path       ;
+
 		var li_outer = document.createElement("li");
+    li_outer.id = options.id;
+    li_outer.classList.add(options.isDirectory ? "branch" : "leaf");
+    
+		var inputSelect = document.createElement("input");
+    inputSelect.type = "checkbox";
+    inputSelect.className = "tj_checkbox";
+    inputSelect.id = options.id + "_checkbox";
+    inputSelect.value = options.path;
+    inputSelect.selected = node.isSelected();
+    
+    var copyButton = document.createElement("span");
+    copyButton.id = options.id + "_copy";
+    copyButton.classList.add("tj_copy");
+    copyButton.classList.add("tj_icon");
+    copyButton.innerHTML = TreeConfig.copy_icon;
+    copyButton.firstElementChild.style.pointerEvents = "none";
+    copyButton.dataset.value = "https://bubblobill.github.io/soundShare/audio/" + options.path;
+    copyButton.title = "Copy link";
+    
 		var span_desc = document.createElement("span");
 		span_desc.className = "tj_description";
 		span_desc.tj_node = node;
@@ -153,7 +178,7 @@ function TreeView(root, container, options){
 		
 		if(node.isSelected()){
 			span_desc.classList.add("selected");
-		}
+    }
 
 		span_desc.addEventListener("click", function(e){
 			var cur_el = e.target;
@@ -234,8 +259,52 @@ function TreeView(root, container, options){
 
 			span_desc.innerHTML = ret + node.toString() + "</span>";
 			span_desc.classList.add("tj_leaf");
+            
+      li_outer.appendChild(inputSelect);
+      
+      const snd = player = new Audio(copyButton.dataset.value);
+      player.id  = options.id + "_audio";
+      player.className  = "tj_audio";
+      player.preload = false;
+      player.controls = false;
+      const controls = document.createElement("span");
+      controls.id = player.id + "_controls";
+      controls.classList.add("tj_audio_controls");
+      const play = document.createElement("font");      
+      play.id = controls.id + "_play";
+      play.innerHTML = "&#127900;";
+      play.classList.add ("tj_audio_control");
+      play.title = "Play sound"
+      const pause = document.createElement("font");
+      pause.innerHTML = "&#9208;";
+      pause.id = controls.id + "_pause";
+      pause.classList.add ("tj_audio_control");
+      pause.classList.add("hidden");
+      pause.title = "Pause sound";
+      controls.appendChild(play);
+      controls.appendChild(pause);
+      li_outer.appendChild(controls);
+     
+      li_outer.appendChild(player);
 
 			li_outer.appendChild(span_desc);
+      li_outer.appendChild(copyButton);
+      
+      play.addEventListener("click", buttonHandler);
+      pause.addEventListener("click", buttonHandler);
+      copyButton.addEventListener("click", buttonHandler);
+      player.addEventListener("error", (event) => {
+          controls.classList.add("disabled");
+          play.title = "Link broken";
+          play.removeEventListener("click", buttonHandler);
+          pause.removeEventListener("click", buttonHandler);
+          copyButton.removeEventListener("click", buttonHandler);
+          inputSelect.selected = false;
+          inputSelect.value = "";
+          inputSelect.disabled = true;  
+        }, false);
+      //player.addEventListener("ended", (event) => { document.getElementById(event.target.id + "_controls_pause").click(); });
+      
 		}else{
 			var ret = '';
 			if(node.isExpanded()){
@@ -244,7 +313,7 @@ function TreeView(root, container, options){
 				ret+= '<span class="tj_mod_icon">' + TreeConfig.close_icon + '</span>';
 			}
 
-			var icon = TreeUtil.getProperty(node.getOptions(), "icon", "");
+			var icon = TreeUtil.getProperty(options, "icon", "");
 			if(icon != ""){
 				ret += '<span class="tj_icon">' + icon + '</span>';
 			}else if((icon = TreeUtil.getProperty(options, "parent_icon", "")) != ""){
@@ -254,25 +323,26 @@ function TreeView(root, container, options){
 			}
 
 			span_desc.innerHTML = ret + node.toString() + '</span>';
-
+      li_outer.appendChild(inputSelect);
+      
 			li_outer.appendChild(span_desc);
+			li_outer.appendChild(copyButton);
 
 			if(node.isExpanded()){
 				var ul_container = document.createElement("ul");
-
 				node.getChildren().forEach(function(child){
 					ul_container.appendChild(renderNode(child));
 				});
-
-				li_outer.appendChild(ul_container)
-			}
+        		li_outer.appendChild(ul_container)
+	    	}
 		}
-
 		return li_outer;
 	}
 
-	if(typeof container !== "undefined")
+	if(typeof container !== "undefined"){
 		this.reload();
+  }
+  
 }
 
 function TreeNode(userObject, options){
@@ -299,7 +369,7 @@ function TreeNode(userObject, options){
 		options = {};
 	}else{
 		expanded = TreeUtil.getProperty(options, "expanded", true);
-		enabled = TreeUtil.getProperty(options, "enabled", true);
+		enabled =  TreeUtil.getProperty(options, "enabled", true);
 		selected = TreeUtil.getProperty(options, "selected", false);
 	}
 
@@ -479,7 +549,7 @@ function TreeNode(userObject, options){
 		}
 
 		selected = _selected;
-
+    
 		if(_selected){
 			this.on("select")(this);
 		}else{
@@ -586,10 +656,11 @@ function TreePath(root, node){
 * Util-Methods
 */
 const TreeUtil = {
-	default_leaf_icon: "<span>&#128441;</span>",
+	default_leaf_icon: "<span>&#9834;</span>",
 	default_parent_icon: "<span>&#128449;</span>",
 	default_open_icon: "<span>&#9698;</span>",
 	default_close_icon: "<span>&#9654;</span>",
+	default_copy_icon: "<span>&#10697;</span>",
 
 	isDOM: function(obj){
 		try {
@@ -605,9 +676,9 @@ const TreeUtil = {
 	getProperty: function(options, opt, def){
 		if(typeof options[opt] === "undefined"){
 			return def;
-		}
-
-		return options[opt];
+		} else {
+      return options[opt];
+    }
 	},
 
 	expandNode: function(node){
@@ -666,5 +737,6 @@ var TreeConfig = {
 	parent_icon: TreeUtil.default_parent_icon,
 	open_icon: TreeUtil.default_open_icon,
 	close_icon: TreeUtil.default_close_icon,
+	copy_icon: TreeUtil.default_copy_icon,
 	context_menu: undefined
 };

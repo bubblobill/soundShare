@@ -613,7 +613,8 @@ function TreePath(root, node){
 * Util-Methods
 */
 const TreeUtil = {
-	default_leaf_icon: "<span>&#9834;</span>",
+	//default_leaf_icon: "<span>&#9834;</span>",
+	default_leaf_icon: "<span></span>",
 	default_parent_icon: "<span>&#128449;</span>",
 	default_open_icon: "<span>&#9698;</span>",
 	default_close_icon: "<span>&#9654;</span>",

@@ -140,7 +140,14 @@ function TreeView(root, container, options){
 
 	function renderNode(node){
     let options = node.getOptions();
-    console.log(options);
+    options.selected = node.isSelected();
+    options.expanded = node.isExpanded();
+    options.enabled = node.isEnabled();
+    node.setOptions(options);
+		const inputSelect = options.checkbox;    
+    inputSelect.selected = node.isSelected();
+    const copyButton = options.copy;
+   // console.log(options);
 // options.fileName   ;
 // options.id         ;
 // options.isDirectory;
@@ -150,21 +157,6 @@ function TreeView(root, container, options){
     li_outer.id = options.id;
     li_outer.classList.add(options.isDirectory ? "branch" : "leaf");
     
-		var inputSelect = document.createElement("input");
-    inputSelect.type = "checkbox";
-    inputSelect.className = "tj_checkbox";
-    inputSelect.id = options.id + "_checkbox";
-    inputSelect.value = options.path;
-    inputSelect.selected = node.isSelected();
-    
-    var copyButton = document.createElement("span");
-    copyButton.id = options.id + "_copy";
-    copyButton.classList.add("tj_copy");
-    copyButton.classList.add("tj_icon");
-    copyButton.innerHTML = TreeConfig.copy_icon;
-    copyButton.firstElementChild.style.pointerEvents = "none";
-    copyButton.dataset.value = "https://bubblobill.github.io/soundShare/audio/" + options.path;
-    copyButton.title = "Copy link";
     
 		var span_desc = document.createElement("span");
 		span_desc.className = "tj_description";
@@ -262,49 +254,13 @@ function TreeView(root, container, options){
             
       li_outer.appendChild(inputSelect);
       
-      const snd = player = new Audio(copyButton.dataset.value);
-      player.id  = options.id + "_audio";
-      player.className  = "tj_audio";
-      player.preload = false;
-      player.controls = false;
-      const controls = document.createElement("span");
-      controls.id = player.id + "_controls";
-      controls.classList.add("tj_audio_controls");
-      const play = document.createElement("font");      
-      play.id = controls.id + "_play";
-      play.innerHTML = "&#127900;";
-      play.classList.add ("tj_audio_control");
-      play.title = "Play sound"
-      const pause = document.createElement("font");
-      pause.innerHTML = "&#9208;";
-      pause.id = controls.id + "_pause";
-      pause.classList.add ("tj_audio_control");
-      pause.classList.add("hidden");
-      pause.title = "Pause sound";
-      controls.appendChild(play);
-      controls.appendChild(pause);
-      li_outer.appendChild(controls);
-     
+      const player = options.player;
+      const controls = options.controls;
+      li_outer.appendChild(controls);     
       li_outer.appendChild(player);
-
 			li_outer.appendChild(span_desc);
       li_outer.appendChild(copyButton);
-      
-      play.addEventListener("click", buttonHandler);
-      pause.addEventListener("click", buttonHandler);
-      copyButton.addEventListener("click", buttonHandler);
-      player.addEventListener("error", (event) => {
-          controls.classList.add("disabled");
-          play.title = "Link broken";
-          play.removeEventListener("click", buttonHandler);
-          pause.removeEventListener("click", buttonHandler);
-          copyButton.removeEventListener("click", buttonHandler);
-          inputSelect.selected = false;
-          inputSelect.value = "";
-          inputSelect.disabled = true;  
-        }, false);
-      //player.addEventListener("ended", (event) => { document.getElementById(event.target.id + "_controls_pause").click(); });
-      
+     
 		}else{
 			var ret = '';
 			if(node.isExpanded()){
@@ -540,6 +496,7 @@ function TreeNode(userObject, options){
 	}
 
 	this.setSelected = function(_selected){
+    
 		if(typeof _selected !== "boolean"){
 			return;
 		}

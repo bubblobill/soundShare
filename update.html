@@ -23,7 +23,7 @@
         'X-GitHub-Api-Version': '2022-11-28'
       }
   })
-    getRepoContents( jsonPath(json, "$..[?(@.path==`audio`)].sha")[0]);
+    getRepoContents( jsonPath(result, "$..[?(@.path==`audio`)].sha")[0]);
   }
   async function getRepoContents(SHA) {
     const result = await request('GET /repos/bubblobill/soundShare/git/trees/'+SHA+'?recursive=1', {
